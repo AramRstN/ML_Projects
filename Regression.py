@@ -1,5 +1,5 @@
 import numpy as np 
-#import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
 def fake_data (n=1000, noise=0.5):
     np.random.seed(42)
@@ -31,6 +31,10 @@ def polynomial_regression(X,y, degree):
     w = np.linalg.inv(X_poly.T.dot(X_poly)).dot(X_poly.T).dot(y)
     return w
 
+#Error
+def rms_error(y_acctual, y_predicted):
+    return np.sqrt(np.mean((y_acctual - y_predicted) ** 2))
+
 # Linear Regression
 X, y = fake_data(n=50, noise=5.0)
 w = linear_regression_closed_form(X, y)
@@ -50,3 +54,30 @@ weights = polynomial_regression(X, y, degree)
 X_fit = np.linspace(X.min(), X.max(), 200)
 X_fit_poly = poly_features(X_fit, degree)
 y_poly_pred = X_fit_poly.dot(weights)
+
+
+# Error (RMSE)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+train_rms_errors = 0
+test_rms_errors = 0
+
+# Training
+w_poly = polynomial_regression(X_train, y_train, degree)
+
+#predictions-Train
+X_train_poly = poly_features(X_train, degree)
+y_train_pred = X_train_poly.dot(w_poly)
+
+# Predictions-test
+X_test_poly = poly_features(X_test, degree)
+y_test_pred = X_test_poly.dot(w_poly)
+
+# Calculate RMSE for both training and test sets
+train_rms_error = rms_error(y_train, y_train_pred)
+test_rms_error = rms_error(y_test, y_test_pred)
+
+
+# Print the RMSE for the current degree
+print(f"Train RMSE = {train_rms_error:.2f}, Test RMSE = {test_rms_error:.2f}")
