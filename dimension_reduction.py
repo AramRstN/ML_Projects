@@ -3,6 +3,9 @@ from sklearn.decomposition import *
 import matplotlib.pyplot as plt
 from sklearn.manifold import *
 from sklearn.svm import *
+from sklearn.ensemble import *
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import ConfusionMatrixDisplay
 
 data = load_digits()
 print(data.shape)
@@ -30,4 +33,14 @@ dr_algorithms = {"PCA": PCA, "KernelPCA":KernelPCA, "MiniBatchSparsePCA": MiniBa
 
 for name, algorithm in dr_algorithms.items():
     visualize_dim_reduction(name, algorithm, data)
+
+
+X_train, X_test, Y_train, Y_test = train_test_split(data.data, data.target) #shuffle
+cls_algorithms = {"SVC":SVC, "RandomForestClassifier":RandomForestClassifier, "AdaBoostClassifier": AdaBoostClassifier}
+
+for name, algorithm in cls_algorithms.items():
+    alg = algorithm()
+    alg.fit(X_train, Y_train) #Train
+    #y_predicted = alg.predict(X_test) #predict
+    ConfusionMatrixDisplay.from_estimator(alg, X_test, Y_test)
 
