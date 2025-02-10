@@ -3,7 +3,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor
-import ipywidgets as widgets
+#import ipywidgets as widgets
 from IPython.display import display
 from matplotlib import pyplot as plt
 from tqdm import trange
@@ -58,30 +58,6 @@ class NeuralNetwork (nn.modules):
         logits = self.linear_relu_stack(x)
         return logits
 
-def train (model, optimzar, epochs = 10):
-    losses, accuracies = [], []
-
-    for _ in (pbar := trange(epochs)):
-        r_loss, acc = 0, 0
-        for x, y in train_data:
-            x, y = x.to(device), y.to(device)
-            predict = model(x)
-            loss = loss_function(predict, y)
-            optimizaer.step()
-            optimizaer.zero_grad()
-            r_loss += loss.item()
-            predict = torch.argmax(predict, axis = 1)
-            acc += sum(predict == y).item()
-        
-        acc /= len(train_dataloader.dataset)
-        acc *= 100
-
-        r_loss /= len(train_dataloader)
-        losses.append(r_loss)
-        accuracies.append(acc)
-        pbar.set_description(f'Loss={r_loss:.3f} | Accuracy = {acc:.2f}%')
-    return losses, accuracies
-
 #init. the instance of the model
 model = NeuralNetwork().to(device)
 
@@ -108,6 +84,7 @@ for _ in (pbar := trange(epochs)):
         pbar.set_description(f'Loss = {loss.item():.3f}')
 
 
+#eval 
 correct, total = 0, 0
 
 with torch.no_grad():
