@@ -19,7 +19,7 @@ def train_epoch(model, dataloader, loss_func, optimizer, device):
     train_loss = 0.
     train_acc = 0. 
 
-    for image, lebel in dataloader:
+    for image, label in dataloader:
         image, label = image.to(device), label.to(device)
         logits = model(image)
         loss = loss_func(logits, label)
@@ -44,11 +44,11 @@ def validation_epoch(model, dataloader, loss_func, device):
     with torch.inference_mode():
         for image, label in dataloader:
             image, label = image.to(device), label.to(device)
-            logist = model(image)
-            loss = loss_func(logist, label)
+            logits = model(image)
+            loss = loss_func(logits, label)
 
             val_loss += loss.item()
-            val_acc += (logist.argmax(dim=1) == label).sim().item()
+            val_acc += (logits.argmax(dim=1) == label).sum().item()
 
         val_loss /= len(dataloader)
         val_acc /= len(dataloader.dataset)
@@ -140,11 +140,11 @@ class PatchEmbedding(nn.Module):
 # combine embeddings
 class Embeddings (nn.Module):
     def __init__ (self, image_size, p_size, channels, h_size, h_dropout_prob):
-        super(.).__init__()
+        super().__init__()
 
         self.patch_embedding = PatchEmbedding(image_size, p_size, channels, h_size)
         self.cls_token = nn.Parameter(torch.randn(1, 1, h_size))
-        self.pos_e = nn.parameter(torch.randn(1, self.patch_embedding.patches + 1, h_size))
+        self.pos_e = nn.Parameter(torch.randn(1, self.patch_embedding.patches + 1, h_size))
         self.dropout = nn.Dropout(h_dropout_prob)
 
         def forward(self, x):
@@ -162,15 +162,15 @@ class Embeddings (nn.Module):
 
 class ViT (nn.Module):
 
-    def __init__(self, image_size, p_size, channels, h_size, heads, layers, mlp_dim, classes, droupout_prob = 0.1):
-        self.embedding = Embeddings(image_size, p_size, channels, h_size, droupout_prob)
+    def __init__(self, image_size, p_size, channels, h_size, heads, layers, mlp_dim, classes, dropout_prob = 0.1):
+        self.embedding = Embeddings(image_size, p_size, channels, h_size, dropout_prob)
 
         #Transformet Encoder
         encoder = nn.TransformerEncoderLayer(
             d_model= h_size,
             nhead= heads,
             dim_feedforward= mlp_dim,
-            dropout= droupout_prob,
+            dropout= dropout_prob,
             activation= 'gelu',
             batch_first= True
         )
@@ -204,7 +204,7 @@ parameters = {
     'layers': 6,
     'mlp_dim': 256,
     'classes': 10,
-    'droupout_prob': 0.1,
+    'dropout_prob': 0.1,
 }
 
 vision_transformer = ViT(**parameters).to(device)
