@@ -192,3 +192,27 @@ class ViT (nn.Module):
 
         return logits
     
+## Setting parameters and Training part
+    
+
+parameters = {
+    'image_size': 32,
+    'p_size': 4,
+    'channels': 3,
+    'h_size': 128,
+    'heads': 8,
+    'layers': 6,
+    'mlp_dim': 256,
+    'classes': 10,
+    'droupout_prob': 0.1,
+}
+
+vision_transformer = ViT(**parameters).to(device)
+
+if device == 'cuda':
+    vision_transformer = torch.compile(vision_transformer)
+optim = Adam(vision_transformer.parameters(), lr= 1e-3)
+
+results = train_model(vision_transformer, trainloader, testloader, optim, epochs = 30)
+
+plot_history(results)
