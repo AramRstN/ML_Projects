@@ -122,7 +122,7 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer',
 
 #### Image to Vector Embedding 
 #Patch Embedding
-class PatchEmbedding(nn.module):
+class PatchEmbedding(nn.Module):
 
     def __init__ (self, image_size, p_size, channels, h_size):
         super().__init__()
@@ -138,7 +138,7 @@ class PatchEmbedding(nn.module):
         return x
     
 # combine embeddings
-class Embeddings (nn.module):
+class Embeddings (nn.Module):
     def __init__ (self, image_size, p_size, channels, h_size, h_dropout_prob):
         super(.).__init__()
 
@@ -157,3 +157,38 @@ class Embeddings (nn.module):
             x = self.dropout(x)
 
             return x
+        
+# ViT Classification Model
+
+class ViT (nn.Module):
+
+    def __init__(self, image_size, p_size, channels, h_size, heads, layers, mlp_dim, classes, droupout_prob = 0.1):
+        self.embedding = Embeddings(image_size, p_size, channels, h_size, droupout_prob)
+
+        #Transformet Encoder
+        encoder = nn.TransformerEncoderLayer(
+            d_model= h_size,
+            nhead= heads,
+            dim_feedforward= mlp_dim,
+            dropout= droupout_prob,
+            activation= 'gelu',
+            batch_first= True
+        )
+        self.encoder = nn.TransformerEncoder(encoder, num_layers= layers)
+
+        # Classification with MLP
+        self.mlp_head = nn.Sequential(
+            nn.LayerNorm(h_size),
+            nn.Linear(h_size, classes)
+        )
+
+    def forward (self, x):
+        x = self.embedding(x)
+        x = self.encoder(x)
+
+        cls_token = x[:, 0]
+
+        logits = self.mlp_head(cls_token)
+
+        return logits
+    
