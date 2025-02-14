@@ -120,3 +120,40 @@ classes = ('plane', 'car', 'bird', 'cat', 'deer',
         
 
 
+#### Image to Vector Embedding 
+#Patch Embedding
+class PatchEmbedding(nn.module):
+
+    def __init__ (self, image_size, p_size, channels, h_size):
+        super().__init__()
+
+        self.patches = (image_size // p_size) ** 2
+        self.projection = nn.Conv2d(channels, h_size, kernel_size= p_size, stride= p_size)
+
+    def forward(self, x):
+        
+        x = self.projection(x)
+        x = x.flatten(2).transpose(1, 2)
+
+        return x
+    
+# combine embeddings
+class Embeddings (nn.module):
+    def __init__ (self, image_size, p_size, channels, h_size, h_dropout_prob):
+        super(.).__init__()
+
+        self.patch_embedding = PatchEmbedding(image_size, p_size, channels, h_size)
+        self.cls_token = nn.Parameter(torch.randn(1, 1, h_size))
+        self.pos_e = nn.parameter(torch.randn(1, self.patch_embedding.patches + 1, h_size))
+        self.dropout = nn.Dropout(h_dropout_prob)
+
+        def forward(self, x):
+            x = self.patch_embedding(x)
+            batch_size, _, _ = x.size()
+            cls_tokens = self.cls_token.expand(batch_size, -1, -1)
+
+            x = torch.cat((cls_tokens, x), dim=1)
+            x = x + self.pos_e
+            x = self.dropout(x)
+
+            return x
