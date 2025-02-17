@@ -92,6 +92,8 @@ def plot_history(history):
 
 #dataset--- ImageNet
     
+trainloader = []
+testloader = []
 
     
 ### Image to Vector Embedding 
