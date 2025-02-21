@@ -7,6 +7,7 @@ import torch.optim as optim
 from torchmetrics import Accuracy
 from torch.nn.init import init
 
+#### Tabular data
 
 class WaterDataset(Dataset):
     def __init__(self, csv_path):
