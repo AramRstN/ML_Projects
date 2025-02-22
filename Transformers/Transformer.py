@@ -209,3 +209,19 @@ class DecoderLayer(nn.Module):
         x = self.norm2(x + self.dropout(ff_output))
         return x
     
+class TransformerDecoder(nn.Module):
+    def __init__(self, vocab_size, d_model, num_layers, num_heads, d_ff, dropout, max_seq_length):
+        super(TransformerDecoder, self).__init__()
+        self.embedding = InputEmbedding(vocab_size, d_model)
+        self.positional_embedding = PositionalEncoding(d_model, max_seq_length)
+        self.layers = nn.ModuleList([DecoderLayer(d_model,num_heads, d_ff, dropout) for _ in range(num_layers)])
+        self.fc = nn.Linear(d_model, vocab_size)
+
+    def forward(self, x, tgt_mask):
+        x = self.embedding(x)
+        x = self.positional_embedding(x)
+        for layer in self.layers:
+            x = layer(x, tgt_mask)
+        x = self.fc(x)
+        return f.log_softmax(x, dim=1)
+
