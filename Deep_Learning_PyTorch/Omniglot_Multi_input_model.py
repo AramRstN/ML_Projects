@@ -18,7 +18,7 @@ class OmniglotDataset (Dataset):
     def __getitem__(self, idx):
         image_path, alphabet, label = self.samples[idx]
         img = Image.open(image_path).convert('L')
-        img_transformed = self.transform(img)
+        img = self.transform(img)
         return img, alphabet, label
         
 class Net(nn.Module):
