@@ -3,12 +3,12 @@ import math
 import torch.nn as nn
 import torch.nn.functional as f
 
-model = nn.Transformer(
-    d_model= 1536,
-    nhead= 8,
-    num_encoder_layers= 6,
-    num_decoder_layers= 6
-)
+# model = nn.Transformer(
+#     d_model= 1536,
+#     nhead= 8,
+#     num_encoder_layers= 6,
+#     num_decoder_layers= 6
+# )
 
 class InputEmbedding (nn.Module):
     def __init__(self, vocab_size: int, d_model: int):
