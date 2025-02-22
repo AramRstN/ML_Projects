@@ -188,3 +188,24 @@ print(f"Classification outputs for a batch of
       {batch_size} sequences:\n{classification}")
 print(f"Encoder output shape: {output.shape}\n
       Classification head output shape: {classification.shape}")
+
+tgt_mask = (1 - torch.triu(
+    torch.ones(1, seq_length, seq_length), diagonal=1)
+    ).bool()
+
+class DecoderLayer(nn.Module):
+    def __init__(self, d_model, num_heads, d_ff, dropout):
+        super().__init__()
+        self.self_attn = MultiHeadAttention(d_model, num_heads)
+        self.ff_sublayer = FeedForwardSubLayer(d_model, d_ff)
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x, tgt_mask):
+        attn_output = self.self_attn(x, x, x, tgt_mask)
+        x = self.norm1(x + self.dropout(attn_output))
+        ff_output = self.ff_sublayer(x)
+        x = self.norm2(x + self.dropout(ff_output))
+        return x
+    
