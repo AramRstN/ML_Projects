@@ -190,4 +190,63 @@ print(predictions)
 results = bleu.compute(predictions=predictions, references=references_2)
 print(results)
 
+#ROUGE -> similarity between generated a summary and refrence summaries
+rouge = evaluate.load("rouge")
+predictions = ["""Pluto is a dwarf planet in our solar system, located in the Kuiper Belt beyond Neptune, and was formerly considered the ninth planet until its reclassification in 2006."""]
+references = ["""Pluto is a dwarf planet in the solar system, located in the Kuiper Belt beyond Neptune, and was previously deemed as a planet until it was reclassified in 2006."""]
+# Calculate the rouge scores between the predicted and reference summaries
+results = rouge.compute(predictions=predictions, references=references)
+print("ROUGE results: ", results)
 
+#METEOR
+meteor = evaluate.load("meteor")
+generated = ["The burrow stretched forward like a narrow corridor for a while, then plunged abruptly downward, so quickly that Alice had no chance to stop herself before she was tumbling into an extremely deep shaft."]
+reference = ["The rabbit-hole went straight on like a tunnel for some way, and then dipped suddenly down, so suddenly that Alice had not a moment to think about stopping herself before she found herself falling down a very deep well."]
+# Compute and print the METEOR score
+results = meteor.compute(predictions= generated, references= reference)
+print("Meteor: ", results)
+
+#ExactMatch(EM)
+exact_match = evaluate.load("exact_match")
+predictions = ["It's a wonderful day", "I love dogs", "DataCamp has great AI courses", "Sunshine and flowers"]
+references = ["What a wonderful day", "I love cats", "DataCamp has great AI courses", "Sunsets and flowers"]
+# Compute the exact match and print the results
+results = exact_match.compute(predictions = predictions, references=references)
+print("EM results: ", results)
+
+#Safeguarding LLMs
+#Toxicity
+
+toxicity_metric = evaluate.load("toxicity")
+texts_1 = ["Everyone in the team adores him", "He is a true genius, pure talent"]
+texts_2 = ["Nobody in the team likes him", "He is a useless 'good-for-nothing'"]
+toxicity_results_1 = toxicity_metric.compute(
+    predictions=texts_1,
+    aggregation="maximum")
+toxicity_results_2 = toxicity_metric.compute(
+    predictions=texts_2,
+      aggregation="maximum")
+print("Toxicity Sentences 1:", toxicity_results_1)
+print("Toxicity Sentences 2:", toxicity_results_2)
+
+# Calculate the toxicity ratios
+toxicity_1_ratio = toxicity_metric.compute(predictions=user_1, aggregation="ratio")
+toxicity_2_ratio = toxicity_metric.compute(predictions=user_2, aggregation="ratio")
+print("Toxicity ratio (user_1):", toxicity_1_ratio['toxicity_ratio'])
+print("Toxicity ratio (user_2): ", toxicity_2_ratio['toxicity_ratio'])
+
+#regard anad regard-comparison
+group1 = ['abc are described as loyal', 
+          'abc are honest but kind']
+group2 = ['abc are known for being confrontational',
+          'abc are very blunt']
+
+regard = evaluate.load("regard")
+regard_comp = evaluate.load("regard", "compare")
+polarity_results_1 = regard.compute(data=group1)
+polarity_results_2 = regard.compute(data = group2)
+print("Polarity in group 1:\n", polarity_results_1)
+print("Polarity in group 2:\n", polarity_results_2)
+
+polarity_results_comp = regard_comp.compute(data=group1, references=group2)
+print("Polarity comparison between groups:\n", polarity_results_comp)
