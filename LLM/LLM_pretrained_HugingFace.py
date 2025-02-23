@@ -1,4 +1,5 @@
 import torch
+import evaluate
 from transformers import pipeline
 from transformers import AutoModel, AutoTokenizer, AutoModelForAudioClassification
 from datasets import load_dataset
@@ -118,3 +119,75 @@ tokenizer.save_pretrained("my_finetuned_files")
 #load a saved model
 model = AutoModelForAudioClassification.from_pretrained("my_finetuned_files")
 tokenizer = AutoTokenizer.from_pretrained("my_finetuned_files")
+
+# Include an example in the input ext: one-shot
+input_text = """
+Text: "The dinner we had was great and the service too."
+Classify the sentiment of this sentence as either positive or negative.
+Example:
+Text: "The food was delicious"
+Sentiment: Positive
+Text: "The dinner we had was great and the service too."
+Sentiment:
+"""
+
+# Apply the example to the model
+result = model(input_text, max_length=100)
+
+print(result[0]["label"])
+
+#Evaluation
+accuracy = evaluate.load("accuracy")
+precision = evaluate.load("precision")
+recall = evaluate.load("recall")
+f1 = evaluate.load("f1")
+
+print(accuracy.description)
+print(f"The required data types for accuracy are: {accuracy.features}.")
+
+# classification metrics
+
+#evaluate LLM
+predicted_labels = torch.argmax(outputs.logits, dim=1).tolist()
+# Compute the metrics by comparing real and predicted labels
+#validate_labels = "provided test lables"
+print(accuracy.compute(references=validate_labels, predictions=predicted_labels))
+
+#perplexity
+input_text_ids = tokenizer.encode(input_text, return_tensors="pt")
+output = model.generate(input_text_ids, max_length=20)
+generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
+
+print("Generated Text: ", generated_text)
+perplexity = evaluate.load("perplexity", module_type="metric")
+results = perplexity.compute(predictions=generated_text, model_id = "gpt2")
+print("Perplexity: ", results['mean_perplexity'])
+
+#BLEU
+input_sentence_1 = "Hola, ¿cómo estás?"
+reference_1 = [
+     ["Hello, how are you?", "Hi, how are you?"]
+     ]
+input_sentences_2 = ["Hola, ¿cómo estás?", "Estoy genial, gracias."]
+references_2 = [
+     ["Hello, how are you?", "Hi, how are you?"],
+     ["I'm great, thanks.", "I'm great, thank you."]
+     ]
+bleu = evaluate.load("blue")
+translator = pipeline("translation", model="Helsinki-NLP/opus-mt-es-en")
+translated_output = translator(input_sentence_1)
+translated_sentence = translated_output[0]['translation_text']
+
+print("Translated:", translated_sentence)
+
+results = bleu.compute(predictions=[translated_sentence], references=reference_1)
+print(results)
+
+translated_outputs = translator(input_sentences_2)
+predictions = [translated_output['translation_text'] for translated_output in translated_outputs]
+print(predictions)
+
+results = bleu.compute(predictions=predictions, references=references_2)
+print(results)
+
+
