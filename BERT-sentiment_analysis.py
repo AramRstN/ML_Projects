@@ -1,10 +1,12 @@
 import pandas as pd 
-import numpy
+import numpy as np
+import matplotlib as plt
+import seaborn as sns
 import torch
 from transformers import BertTokenizer, BertForSequenceClassification
 from datasets import load_dataset
 from transformers import Trainer, TrainingArguments
-from sklearn.metrics import accuracy_score,precision_recall_fscore_support
+from sklearn.metrics import accuracy_score,precision_recall_fscore_support, confusion_matrix
 
 dataset = load_dataset("imdb")
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
@@ -61,3 +63,28 @@ def compute_metrics(eval_pred):
         'recall': recall,
         'f1': f1
     }
+
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=train_dataset,
+    eval_dataset=test_dataset,
+    compute_metrics=compute_metrics
+)
+
+result = trainer.evaluate()
+
+##confusion Matrix
+
+predictions = trainer.predict(test_dataset)
+preds = np.argmax(predictions.predictions, axis=1)
+labels = predictions.label_ids
+
+cm = confusion_matrix(labels, preds)
+sns.heatmap(cm, annot=True, fmt='d', cmap='Red', xticklabels=['Negative', 'Positive'], yticklabels=['Negative', 'Positive'])
+
+plt.xlabel('predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+
+plt.show()
