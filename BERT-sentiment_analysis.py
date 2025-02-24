@@ -88,3 +88,51 @@ plt.ylabel('True')
 plt.title('Confusion Matrix')
 
 plt.show()
+
+## testing the model:
+
+example_sentences = [
+    "I absolutely loved this movie! The performances were outstanding.",
+    "This was the worst film I have ever seen. Completely disappointing.",
+    "The plot was intriguing, but the characters were underdeveloped.",
+    "An average movie with some good moments and some bad ones.",
+    "I was not impressed by the storyline or the acting.",
+    "Fantastic visuals and a gripping story. Highly recommend!",
+    "The movie was okay, nothing special but not terrible either.",
+    "I didn't enjoy this movie at all. It was a waste of time.",
+    "A masterpiece of modern cinema. Truly inspiring.",
+    "Mediocre at best. I expected much more from this director."
+]
+
+def predict_sentiment(sentence):
+
+    inputs = tokenizer.encode_plus(
+        sentence,
+        add_special_tokens=True,
+        max_length=512,
+        truncation=True,
+        padding='max_length',
+        return_tensors='pt'
+    )
+
+    input_ids = inputs['input_ids'].to(device)
+    attention_mask = inputs['attention_mask'].to(device)
+
+    with torch.no_grad():
+        outputs = model(input_ids=input_ids, attention_mask=attention_mask)
+
+    logits = outputs.logistpredicted_class_id = logits.argmax().item()
+
+    label = 'Positive' if predicted_class_id == 1 else 'Negative'
+
+    return label
+
+results = []
+
+for sentences in example_sentences:
+    prediction = predict_sentiment(sentence)
+    results.append({"sentence":sentence, "Sentiment":prediction})
+
+dataframe_result = pd.DataFrame(results)
+
+print(dataframe_result)
