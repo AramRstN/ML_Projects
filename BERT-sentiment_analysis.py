@@ -122,7 +122,7 @@ def predict_sentiment(sentence):
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
 
     logits = outputs.logistpredicted_class_id = logits.argmax().item()
-
+    predicted_class_id = logits.argmax().item()
     label = 'Positive' if predicted_class_id == 1 else 'Negative'
 
     return label
@@ -130,8 +130,8 @@ def predict_sentiment(sentence):
 results = []
 
 for sentences in example_sentences:
-    prediction = predict_sentiment(sentence)
-    results.append({"sentence":sentence, "Sentiment":prediction})
+    prediction = predict_sentiment(sentences)
+    results.append({"sentence":sentences, "Sentiment":prediction})
 
 dataframe_result = pd.DataFrame(results)
 
